@@ -48,6 +48,6 @@ public class ModelHandler {
 	private static void register(Block block)
 	{
 		register(Item.getItemFromBlock(block));
-  }
+	}
 }
 
