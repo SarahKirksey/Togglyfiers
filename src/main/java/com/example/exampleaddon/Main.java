@@ -22,7 +22,6 @@ public class Main {
     @SidedProxy(clientSide = "com.example.exampleaddon.proxy.ClientProxy", serverSide = "com.example.exampleaddon.proxy.CommonProxy")
     public static CommonProxy proxy;
 
-
     @Mod.Instance(MODID)
     public static Main instance;
 

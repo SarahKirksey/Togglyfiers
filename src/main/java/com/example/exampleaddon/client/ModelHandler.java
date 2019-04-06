@@ -10,6 +10,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import static com.example.exampleaddon.blocks.ModBlocks.*;
 import static com.example.exampleaddon.items.ModItems.*;
 
@@ -47,20 +48,6 @@ public class ModelHandler {
 	private static void register(Block block)
 	{
 		register(Item.getItemFromBlock(block));
-	}
-	
-	private static class DualWeaponDefinition implements ItemMeshDefinition
-	{
-		private Item item;
-		public DualWeaponDefinition(Item item){
-			this.item=item;
-		}
-		@Override
-		public ModelResourceLocation getModelLocation(ItemStack stack)
-		{
-				return new ModelResourceLocation(item.getRegistryName() + "_sheathed","inventory");
-		}
-	}	
-	
+  }
 }
 
