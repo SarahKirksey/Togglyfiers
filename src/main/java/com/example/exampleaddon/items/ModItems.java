@@ -1,7 +1,6 @@
 package com.example.exampleaddon.items;
 
-import com.mraof.minestuck.item.MinestuckItems;
-
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraftforge.event.RegistryEvent;
@@ -11,7 +10,7 @@ import static com.example.exampleaddon.blocks.ModBlocks.*;
 
 public class ModItems {
 	
-	public static Item exampleItem = new Item().setRegistryName("example_item").setUnlocalizedName("exampleItem").setCreativeTab(MinestuckItems.tabMinestuck);
+	public static Item exampleItem = new Item().setRegistryName("example_item").setUnlocalizedName("exampleItem").setCreativeTab(CreativeTabs.MISC);
 
 	@SubscribeEvent
 	public static void registerItems(RegistryEvent.Register<Item> event)
