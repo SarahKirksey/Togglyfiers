@@ -1,16 +1,16 @@
 package com.example.exampleaddon.blocks;
 
-import com.mraof.minestuck.item.MinestuckItems;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 
 public class ModBlocks {
 	
-	public static Block exampleBlock = new Block(Material.CLAY).setRegistryName("example_block").setUnlocalizedName("exampleBlock").setCreativeTab(MinestuckItems.tabMinestuck);
+	public static Block exampleBlock = new Block(Material.CLAY).setRegistryName("example_block").setUnlocalizedName("exampleBlock").setCreativeTab(CreativeTabs.MISC);
 	
 	@SubscribeEvent
 	public static void registerBlocks(RegistryEvent.Register<Block> event)

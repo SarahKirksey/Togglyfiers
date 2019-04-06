@@ -1,9 +1,5 @@
 package com.example.exampleaddon.client;
 
-import com.example.exampleaddon.ModGrist;
-import com.mraof.minestuck.item.weapon.ItemDualWeapon;
-import com.mraof.minestuck.util.GristType;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -14,7 +10,6 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import static com.mraof.minestuck.item.MinestuckItems.candy;
 import static com.example.exampleaddon.blocks.ModBlocks.*;
 import static com.example.exampleaddon.items.ModItems.*;
 
@@ -31,8 +26,6 @@ public class ModelHandler {
 	private static void itemModels()
 	{
 		register(exampleItem);
-		
-		register(candy, GristType.REGISTRY.getID(ModGrist.example) + 1, "example_candy");
 
 	}
 	
@@ -65,12 +58,7 @@ public class ModelHandler {
 		@Override
 		public ModelResourceLocation getModelLocation(ItemStack stack)
 		{
-			if(((ItemDualWeapon)this.item).IsDrawn(stack)){
-				
-				return new ModelResourceLocation(item.getRegistryName() + "_drawn","inventory");
-			}else
 				return new ModelResourceLocation(item.getRegistryName() + "_sheathed","inventory");
-			
 		}
 	}	
 	
