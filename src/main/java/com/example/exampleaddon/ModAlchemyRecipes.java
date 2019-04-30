@@ -1,5 +1,5 @@
 package com.example.exampleaddon;
-
+/*
 import com.mraof.minestuck.block.MinestuckBlocks;
 import com.mraof.minestuck.item.MinestuckItems;
 import com.mraof.minestuck.util.CombinationRegistry;
@@ -40,3 +40,4 @@ public class ModAlchemyRecipes {
 		
 	}
 }
+*/

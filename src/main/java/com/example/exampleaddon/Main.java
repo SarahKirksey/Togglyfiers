@@ -30,8 +30,7 @@ public class Main {
     	
     	ModConfig.loadConfigFile(event.getSuggestedConfigurationFile(), event.getSide());
 		
-      	MinecraftForge.EVENT_BUS.register(ModBlocks.class);
-    	MinecraftForge.EVENT_BUS.register(ModItems.class);
+
     	proxy.preInit();
     	
     }
