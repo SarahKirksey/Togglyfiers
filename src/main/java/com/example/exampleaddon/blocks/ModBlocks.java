@@ -10,13 +10,15 @@ import net.minecraftforge.registries.IForgeRegistry;
 public class ModBlocks {
 	
 	public static Block exampleBlock = new Block(Material.CLAY).setRegistryName("example_block").setUnlocalizedName("exampleBlock").setCreativeTab(CreativeTabs.MISC);
-	
+	public static Block togglifyer = new BlockTogglyfier();
+
 	@SubscribeEvent
 	public static void registerBlocks(RegistryEvent.Register<Block> event)
 	{
 		IForgeRegistry<Block> registry = event.getRegistry();
 		//blocks
 		registry.register(exampleBlock);
+		registry.register(togglifyer);
 	}
 
 }

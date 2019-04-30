@@ -1,5 +1,6 @@
 package com.example.exampleaddon.client;
 
+import jdk.nashorn.internal.objects.NativeJava;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -14,7 +15,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import static com.example.exampleaddon.blocks.ModBlocks.*;
 import static com.example.exampleaddon.items.ModItems.*;
 
-@SideOnly(Side.CLIENT)
 public class ModelHandler {
 
 	@SubscribeEvent
@@ -27,12 +27,13 @@ public class ModelHandler {
 	private static void itemModels()
 	{
 		register(exampleItem);
-
+		register(togglificationCore);
 	}
 	
 	private static void blockModels()
 	{
 		register(exampleBlock);
+		register(togglifyer);
 	}
 	
 	private static void register(Item item)
