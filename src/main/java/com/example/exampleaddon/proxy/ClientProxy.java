@@ -1,5 +1,6 @@
 package com.example.exampleaddon.proxy;
 
+import com.example.exampleaddon.client.ModelHandler;
 import net.minecraft.client.renderer.block.model.ModelManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
@@ -9,8 +10,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ClientProxy extends CommonProxy {
 	
 	@Override
-	public void preInit() {
-		MinecraftForge.EVENT_BUS.register(ModelManager.class);
+	public void preInit()
+	{
+		super.preInit();
+		MinecraftForge.EVENT_BUS.register(ModelHandler.class);
 	}
 	
 	@Override
