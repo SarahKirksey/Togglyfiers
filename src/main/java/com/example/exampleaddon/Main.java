@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = Main.MODID, name = Main.MODNAME, version = Main.VERSION, useMetadata = true, dependencies = "required-after:minestuck@[1.2.258,);" ,acceptedMinecraftVersions = "[1.12,1.12.2]")
+@Mod(modid = Main.MODID, name = Main.MODNAME, version = Main.VERSION, useMetadata = true,acceptedMinecraftVersions = "[1.12,1.12.2]")
 public class Main {
 
     public static final String MODID = "exampleaddon";
@@ -30,9 +30,7 @@ public class Main {
     	
     	ModConfig.loadConfigFile(event.getSuggestedConfigurationFile(), event.getSide());
 		
-      	MinecraftForge.EVENT_BUS.register(ModBlocks.class);
-    	MinecraftForge.EVENT_BUS.register(ModItems.class);
-    	MinecraftForge.EVENT_BUS.register(new ModGrist());
+
     	proxy.preInit();
     	
     }
@@ -42,9 +40,6 @@ public class Main {
     public void init(FMLInitializationEvent e) {
     	
         proxy.init();
-        ModAlchemyRecipes.registerVanillaRecipes();
-    	ModAlchemyRecipes.registerMinestuckRecipes();
-    	ModAlchemyRecipes.registerModRecipes();
     }
 
     @EventHandler

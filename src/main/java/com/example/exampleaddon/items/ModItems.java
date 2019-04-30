@@ -1,7 +1,7 @@
 package com.example.exampleaddon.items;
 
-import com.mraof.minestuck.item.MinestuckItems;
-
+import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraftforge.event.RegistryEvent;
@@ -11,7 +11,8 @@ import static com.example.exampleaddon.blocks.ModBlocks.*;
 
 public class ModItems {
 	
-	public static Item exampleItem = new Item().setRegistryName("example_item").setUnlocalizedName("exampleItem").setCreativeTab(MinestuckItems.tabMinestuck);
+	public static Item exampleItem = new Item().setRegistryName("example_item").setUnlocalizedName("exampleItem").setCreativeTab(CreativeTabs.MISC);
+	public static Item togglificationCore = new Item().setRegistryName("togglification_core").setUnlocalizedName("togglificationCore").setCreativeTab(CreativeTabs.REDSTONE);
 
 	@SubscribeEvent
 	public static void registerItems(RegistryEvent.Register<Item> event)
@@ -20,8 +21,10 @@ public class ModItems {
 		
 		//ItemBlocks
 		registerItemBlock(registry, new ItemBlock(exampleBlock));
-		
+		registerItemBlock(registry, togglifyer);
+
 		registry.register(exampleItem);
+		registry.register(togglificationCore);
 		
 	}
 	
@@ -31,4 +34,5 @@ public class ModItems {
 		return item;
 	}
 
+	private static Item registerItemBlock(IForgeRegistry<Item> registry, Block block) {return registerItemBlock(registry, new ItemBlock(block));}
 }
