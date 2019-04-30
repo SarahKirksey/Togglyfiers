@@ -1,5 +1,6 @@
 package com.example.exampleaddon;
 
+/*
 import com.mraof.minestuck.util.GristType;
 
 import net.minecraft.util.ResourceLocation;
@@ -23,3 +24,4 @@ public class ModGrist {
 	}
 
 }
+*/
