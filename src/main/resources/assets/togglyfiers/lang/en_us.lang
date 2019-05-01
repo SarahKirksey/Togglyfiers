@@ -6,3 +6,5 @@ grist.example=Example
 item.togglificationCore.name=Togglyfication Core
 tile.togglyfier.name=Togglyfier
 tile.changeBlock.name=Change Block
+
+container.togglyfier=Togglyfier

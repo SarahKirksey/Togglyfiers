@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "togglyfiers:blocks/togglyfier_edit"
+    }
+}

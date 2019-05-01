@@ -1,5 +1,6 @@
 package com.sarahk.togglyfiers;
 
+import com.sarahk.togglyfiers.proxy.ClientProxy;
 import com.sarahk.togglyfiers.proxy.CommonProxy;
 
 import net.minecraftforge.fml.common.Mod;
@@ -34,8 +35,8 @@ public class Main {
     
 
     @EventHandler
-    public void init(FMLInitializationEvent e) {
-    	
+    public void init(FMLInitializationEvent e)
+    {
         proxy.init();
     }
 
