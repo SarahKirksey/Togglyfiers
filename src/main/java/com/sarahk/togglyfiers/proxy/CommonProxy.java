@@ -1,7 +1,7 @@
-package com.example.exampleaddon.proxy;
+package com.sarahk.togglyfiers.proxy;
 
-import com.example.exampleaddon.blocks.ModBlocks;
-import com.example.exampleaddon.items.ModItems;
+import com.sarahk.togglyfiers.blocks.ModBlocks;
+import com.sarahk.togglyfiers.items.ModItems;
 import net.minecraftforge.common.MinecraftForge;
 
 public class CommonProxy {

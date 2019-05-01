@@ -1,4 +1,4 @@
-package com.example.exampleaddon.blocks;
+package com.sarahk.togglyfiers.blocks;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;

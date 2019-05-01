@@ -1,7 +1,6 @@
-package com.example.exampleaddon.proxy;
+package com.sarahk.togglyfiers.proxy;
 
-import com.example.exampleaddon.client.ModelHandler;
-import net.minecraft.client.renderer.block.model.ModelManager;
+import com.sarahk.togglyfiers.client.ModelHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;

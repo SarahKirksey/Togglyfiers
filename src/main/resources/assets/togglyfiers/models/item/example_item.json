@@ -1,6 +1,6 @@
 {
     "parent": "item/generated",
     "textures": {
-        "layer0": "exampleaddon:items/example_item"
+        "layer0": "togglyfiers:items/example_item"
     }
 }

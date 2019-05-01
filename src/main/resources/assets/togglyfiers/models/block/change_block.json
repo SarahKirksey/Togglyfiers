@@ -2,10 +2,10 @@
 	"parent": "block/block",
 	"credit": "Made with Blockbench",
 	"textures": {
-		"0": "examplemod:blocks/change_block_back",
-		"1": "examplemod:blocks/change_block_front",
-		"2": "examplemod:blocks/change_block_side",
-		"particle": "examplemod:blocks/change_block_back"
+		"0": "togglyfiers:blocks/change_block_back",
+		"1": "togglyfiers:blocks/change_block_front",
+		"2": "togglyfiers:blocks/change_block_side",
+		"particle": "togglyfiers:blocks/change_block_back"
 	},
 	"elements": [
 		{

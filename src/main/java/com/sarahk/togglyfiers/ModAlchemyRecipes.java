@@ -1,4 +1,4 @@
-package com.example.exampleaddon;
+package com.sarahk.togglyfiers;
 /*
 import com.mraof.minestuck.block.MinestuckBlocks;
 import com.mraof.minestuck.item.MinestuckItems;
@@ -13,8 +13,8 @@ import static com.mraof.minestuck.item.MinestuckItems.sbahjPoster;
 import static com.mraof.minestuck.item.MinestuckItems.sord;
 import static com.mraof.minestuck.util.CombinationRegistry.*;
 
-import com.example.exampleaddon.blocks.ModBlocks;
-import com.example.exampleaddon.items.ModItems;
+import ModBlocks;
+import ModItems;
 
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;

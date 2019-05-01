@@ -1,4 +1,4 @@
-package com.example.exampleaddon;
+package com.sarahk.togglyfiers;
 
 /*
 import com.mraof.minestuck.util.GristType;
