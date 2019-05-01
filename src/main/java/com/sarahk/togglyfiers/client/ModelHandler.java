@@ -1,19 +1,14 @@
-package com.example.exampleaddon.client;
+package com.sarahk.togglyfiers.client;
 
-import jdk.nashorn.internal.objects.NativeJava;
+import com.sarahk.togglyfiers.blocks.ModBlocks;
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-import static com.example.exampleaddon.blocks.ModBlocks.*;
-import static com.example.exampleaddon.items.ModItems.*;
+import static com.sarahk.togglyfiers.items.ModItems.*;
 
 public class ModelHandler {
 
@@ -32,8 +27,9 @@ public class ModelHandler {
 	
 	private static void blockModels()
 	{
-		register(exampleBlock);
-		register(togglifyer);
+		register(ModBlocks.exampleBlock);
+		register(ModBlocks.togglifyer);
+		register(ModBlocks.changeBlock);
 	}
 	
 	private static void register(Item item)

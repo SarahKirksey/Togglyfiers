@@ -1,5 +1,6 @@
-package com.example.exampleaddon.items;
+package com.sarahk.togglyfiers.items;
 
+import com.sarahk.togglyfiers.blocks.ModBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -7,12 +8,11 @@ import net.minecraft.item.ItemBlock;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
-import static com.example.exampleaddon.blocks.ModBlocks.*;
 
 public class ModItems {
 	
 	public static Item exampleItem = new Item().setRegistryName("example_item").setUnlocalizedName("exampleItem").setCreativeTab(CreativeTabs.MISC);
-	public static Item togglificationCore = new Item().setRegistryName("togglification_core").setUnlocalizedName("togglificationCore").setCreativeTab(CreativeTabs.REDSTONE);
+	public static Item togglificationCore = new Item().setRegistryName("togglification_core").setUnlocalizedName("togglificationCore").setCreativeTab(CreativeTabs.MATERIALS);
 
 	@SubscribeEvent
 	public static void registerItems(RegistryEvent.Register<Item> event)
@@ -20,8 +20,9 @@ public class ModItems {
 		IForgeRegistry<Item> registry = event.getRegistry();
 		
 		//ItemBlocks
-		registerItemBlock(registry, new ItemBlock(exampleBlock));
-		registerItemBlock(registry, togglifyer);
+		registerItemBlock(registry, new ItemBlock(ModBlocks.exampleBlock));
+		registerItemBlock(registry, ModBlocks.togglifyer);
+		registerItemBlock(registry, ModBlocks.changeBlock);
 
 		registry.register(exampleItem);
 		registry.register(togglificationCore);
