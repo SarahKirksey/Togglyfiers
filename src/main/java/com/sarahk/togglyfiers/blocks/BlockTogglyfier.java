@@ -1,8 +1,15 @@
 package com.sarahk.togglyfiers.blocks;
 
+import java.util.Random;
+
+import javax.annotation.Nullable;
+
 import com.sarahk.togglyfiers.Main;
 import com.sarahk.togglyfiers.gui.GuiHandler;
+import com.sarahk.togglyfiers.listeners.ListenerRegister;
+import com.sarahk.togglyfiers.listeners.ToglyfierListeners;
 import com.sarahk.togglyfiers.tileentity.TileEntityTogglyfier;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -17,9 +24,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
 
 public class BlockTogglyfier extends Block
 {
@@ -72,7 +78,11 @@ public class BlockTogglyfier extends Block
             EnumState toggle = powered ? EnumState.ACTIVATED : EnumState.DEACTIVATED;
             worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
             worldIn.setBlockState(pos, state.withProperty(STATE, toggle));
-
+            if(powered) {
+            	((ToglyfierListeners)ListenerRegister.GetListeners(worldIn, ModBlocks.togglifyer)).OnActivate(pos);
+            }else {
+            	((ToglyfierListeners)ListenerRegister.GetListeners(worldIn, ModBlocks.togglifyer)).OnDeactivate(pos);
+            }
         }
         TileEntityTogglyfier te = (TileEntityTogglyfier) worldIn.getTileEntity(pos);
         if(te != null) te.powered = powered;
@@ -86,7 +96,7 @@ public class BlockTogglyfier extends Block
     @Nullable
     @Override
     public TileEntity createTileEntity(World world, IBlockState state) {
-        return new TileEntityTogglyfier();
+        return new TileEntityTogglyfier(world);
     }
 
     //Block State Stuff
@@ -136,5 +146,19 @@ public class BlockTogglyfier extends Block
 
 
     }
+    
+    //listener stuff
+    public void onBlockDestroyedByExplosion(World worldIn, BlockPos pos, Explosion explosionIn){
+    	ListenerRegister.GetListeners(worldIn, ModBlocks.togglifyer).OnDestroied(pos);
+    }
+    @Override
+    public void onBlockDestroyedByPlayer(World worldIn, BlockPos pos, IBlockState state) {
+    	ListenerRegister.GetListeners(worldIn, ModBlocks.togglifyer).OnDestroied(pos);
+    }
+    @Override
+    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
+    	ListenerRegister.GetListeners(worldIn, ModBlocks.togglifyer).OnPlaced(pos);
+    }
+
 
 }
