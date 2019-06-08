@@ -1,27 +1,33 @@
 package com.sarahk.togglyfiers.tileentity;
 
 import com.sarahk.togglyfiers.blocks.ModBlocks;
+import com.sarahk.togglyfiers.listeners.ListenerRegister;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.World;
 
-public class TileEntityTogglyfier extends TileEntity implements IInventory
+public class TileEntityTogglyfier extends TileEntity implements IInventory, ITickable
 {
     protected ItemStack changeBlock = new ItemStack(ModBlocks.changeBlock, 10);
     private NonNullList<ItemStack> inventory = NonNullList.<ItemStack>withSize(3, ItemStack.EMPTY);
     private String customName;
     public boolean powered = false;
+    private static int TickCount=0;
 
-    public TileEntityTogglyfier()
+    public TileEntityTogglyfier(World worldin)
     {
         inventory.set(0, changeBlock);
+        
     }
 
     @Override
@@ -95,7 +101,7 @@ public class TileEntityTogglyfier extends TileEntity implements IInventory
     public void clear() {inventory.clear();}
 
     //NBT
-
+    
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound)
@@ -124,4 +130,12 @@ public class TileEntityTogglyfier extends TileEntity implements IInventory
     @Override
     public boolean hasCustomName() {return (customName != null && !customName.isEmpty());}
     public void setCustomName(String customName) {this.customName = customName;}
+    
+    @Override
+    public void update() {
+    	TickCount=((TickCount+1)%20);
+    	if(TickCount==0) {
+    		ListenerRegister.GetListeners(world, ModBlocks.togglifyer).OnPlaced(pos);
+    	}
+    }
 }
