@@ -24,7 +24,7 @@ public abstract class ListenerBase {
 	}
 	public void OnPlaced(BlockPos pos) {
 		TogglyfierList.add(pos);
-		System.out.println(blockType+" palced at "+pos);
+		System.out.println(blockType+" placed at "+pos);
 	}
 
 	public void OnDestroied(BlockPos pos) {
