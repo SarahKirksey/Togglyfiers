@@ -30,13 +30,15 @@ import net.minecraft.world.World;
 public class BlockTogglyfier extends Block
 {
     public static final PropertyEnum<EnumState> STATE = PropertyEnum.create("state", EnumState.class, EnumState.values());
-
+    
     public BlockTogglyfier()
     {
-        super(Material.CLAY);
+        super(Material.IRON);
         setUnlocalizedName("togglyfier");
         setRegistryName("togglyfier");
-        setHarvestLevel("pickaxe",0);
+        setHarvestLevel("pickaxe",1);
+        setHardness(4.0f);
+        setResistance(5.0f);
         setCreativeTab(CreativeTabs.REDSTONE);
         setDefaultState(this.blockState.getBaseState().withProperty(STATE, EnumState.DEACTIVATED));
     }
