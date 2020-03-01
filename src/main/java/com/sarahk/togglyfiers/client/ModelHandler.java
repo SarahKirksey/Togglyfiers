@@ -8,10 +8,19 @@ import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-import static com.sarahk.togglyfiers.items.ModItems.*;
+import static com.sarahk.togglyfiers.items.ModItems.exampleItem;
+import static com.sarahk.togglyfiers.items.ModItems.togglificationCore;
 
-public class ModelHandler {
-
+public class ModelHandler
+{
+	
+	private static void blockModels()
+	{
+		register(ModBlocks.exampleBlock);
+		register(ModBlocks.togglyfier);
+		register(ModBlocks.changeBlock);
+	}
+	
 	@SubscribeEvent
 	public static void handleModelRegistry(ModelRegistryEvent event)
 	{
@@ -25,13 +34,6 @@ public class ModelHandler {
 		register(togglificationCore);
 	}
 	
-	private static void blockModels()
-	{
-		register(ModBlocks.exampleBlock);
-		register(ModBlocks.togglifyer);
-		register(ModBlocks.changeBlock);
-	}
-	
 	private static void register(Item item)
 	{
 		ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(Item.REGISTRY.getNameForObject(item), "inventory"));
@@ -39,7 +41,7 @@ public class ModelHandler {
 	
 	private static void register(Item item, int meta, String modelResource)
 	{
-		ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation("exampleaddon:"+modelResource, "inventory"));
+		ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation("exampleaddon:" + modelResource, "inventory"));
 	}
 	
 	private static void register(Block block)

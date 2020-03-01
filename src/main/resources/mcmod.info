@@ -1,8 +1,8 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+  "modid": "togglyfiers",
+  "name": "Togglyfiers",
+  "description": "A reboot/port/remake of TheApathetic's Toggle Blocks mod!",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",

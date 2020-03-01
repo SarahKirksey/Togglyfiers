@@ -9,25 +9,8 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 
-public class ModItems {
-	
-	public static Item exampleItem = new Item().setRegistryName("example_item").setUnlocalizedName("exampleItem").setCreativeTab(CreativeTabs.MISC);
-	public static Item togglificationCore = new Item().setRegistryName("togglification_core").setUnlocalizedName("togglificationCore").setCreativeTab(CreativeTabs.MATERIALS);
-
-	@SubscribeEvent
-	public static void registerItems(RegistryEvent.Register<Item> event)
-	{
-		IForgeRegistry<Item> registry = event.getRegistry();
-		
-		//ItemBlocks
-		registerItemBlock(registry, new ItemBlock(ModBlocks.exampleBlock));
-		registerItemBlock(registry, ModBlocks.togglifyer);
-		registerItemBlock(registry, ModBlocks.changeBlock);
-
-		registry.register(exampleItem);
-		registry.register(togglificationCore);
-		
-	}
+public class ModItems
+{
 	
 	private static Item registerItemBlock(IForgeRegistry<Item> registry, ItemBlock item)
 	{
@@ -36,4 +19,22 @@ public class ModItems {
 	}
 
 	private static Item registerItemBlock(IForgeRegistry<Item> registry, Block block) {return registerItemBlock(registry, new ItemBlock(block));}
+
+	@SubscribeEvent
+	public static void registerItems(RegistryEvent.Register<Item> event)
+	{
+		IForgeRegistry<Item> registry = event.getRegistry();
+		
+		//ItemBlocks
+		registerItemBlock(registry, new ItemBlock(ModBlocks.exampleBlock));
+		registerItemBlock(registry, ModBlocks.togglyfier);
+		registerItemBlock(registry, ModBlocks.changeBlock);
+		
+		registry.register(exampleItem);
+		registry.register(togglificationCore);
+		
+	}
+	public static final Item exampleItem = new Item().setRegistryName("example_item").setUnlocalizedName("exampleItem").setCreativeTab(CreativeTabs.MISC);
+	public static final Item togglificationCore = new Item().setRegistryName("togglification_core").setUnlocalizedName("togglificationCore").setCreativeTab(CreativeTabs.MATERIALS);
+	public static final Item togglyfierAssistant = new Item().setRegistryName("togglifier_assistant").setUnlocalizedName("togglifierAssistant");
 }

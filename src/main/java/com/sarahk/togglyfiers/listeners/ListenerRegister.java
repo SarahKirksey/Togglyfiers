@@ -1,45 +1,60 @@
 package com.sarahk.togglyfiers.listeners;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.sarahk.togglyfiers.blocks.ModBlocks;
-
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.Collection;
 
-public class ListenerRegister {
-	private static List <ListenerBase> ListenerList = new ArrayList<ListenerBase>();
+
+public final class ListenerRegister
+{
+	private static final Collection<TogglyfierListeners> TOGGLYFIER_LISTENERS = new ArrayList<>();
+	private static final Collection<ChangeBlockListeners> CHANGE_BLOCK_LISTENERS = new ArrayList<>();
 	
-	public static ListenerBase GetListeners(World worldIn, Block BlockIn) {
-		List <ListenerBase> L = ListenerList;
-		if(BlockIn==ModBlocks.togglifyer) {	
-			for(int i = 0;i<ListenerList.size();i++) {
-				if(ListenerList.get(i)instanceof ToglyfierListeners &&ListenerList.get(i).GetWorld()==worldIn) {
-					return ListenerList.get(i);
-				}
+	public static ListenerBase GetListeners(World worldIn, Block blockIn)
+	{
+		ListenerBase result = null;
+		if(blockIn==ModBlocks.togglyfier)
+		{
+			result = getListenerFromList(worldIn, TOGGLYFIER_LISTENERS);
+			if(result == null)
+			{
+				TogglyfierListeners newListener = new TogglyfierListeners(worldIn);
+				TOGGLYFIER_LISTENERS.add(newListener);
+				result = newListener;
 			}
-			ToglyfierListeners newListener=new ToglyfierListeners(worldIn);
-			ListenerList.add(newListener);
-			return newListener;
+		}
+		else if(blockIn==ModBlocks.changeBlock)
+		{
+			result = getListenerFromList(worldIn, CHANGE_BLOCK_LISTENERS);
+			if(result == null)
+			{
+				ChangeBlockListeners newListener = new ChangeBlockListeners(worldIn);
+				CHANGE_BLOCK_LISTENERS.add(newListener);
+				result = newListener;
+			}
+		}
+		else
+		{
+			System.out.println("GET LISTENER ERROR : block is not a valid block, returning null");
 		}
 		
-		if(BlockIn==ModBlocks.changeBlock) {	
-			for(int i = 0;i<ListenerList.size();i++) {
-				if(ListenerList.get(i)instanceof ChangeBlockListeners &&ListenerList.get(i).GetWorld()==worldIn) {
-					return ListenerList.get(i);
-				}
-			}
-			ChangeBlockListeners newListener=new ChangeBlockListeners(worldIn);
-			ListenerList.add(newListener);
-			return newListener;
-		}
-		System.out.println("GET LISTENER ERROR : block is not a valid block, returning null");
-		return null;
+		return result;
 	}
 	
-	
-	
-
+	private static <T extends ListenerBase> T getListenerFromList(World worldIn, Iterable<T> list)
+	{
+		T result = null;
+		for(T listenerBase : list)
+		{
+			if(listenerBase!=null && listenerBase.GetWorld()==worldIn)
+			{
+				result = listenerBase;
+				break;
+			}
+		}
+		return result;
+	}
 }
