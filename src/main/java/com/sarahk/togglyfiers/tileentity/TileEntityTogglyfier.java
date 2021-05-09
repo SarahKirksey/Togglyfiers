@@ -1,5 +1,7 @@
 package com.sarahk.togglyfiers.tileentity;
 
+//import com.mojang.authlib.GameProfile;
+
 import com.mojang.authlib.GameProfile;
 import com.sarahk.togglyfiers.Main;
 import com.sarahk.togglyfiers.ModConfig;
@@ -7,10 +9,11 @@ import com.sarahk.togglyfiers.blocks.BlockChangeBlock;
 import com.sarahk.togglyfiers.blocks.BlockTogglyfier.EnumTogglyfierMode;
 import com.sarahk.togglyfiers.blocks.ModBlocks;
 import com.sarahk.togglyfiers.items.ModItems;
+import com.sarahk.togglyfiers.network.TogglyfierNetworkHandler;
+import com.sarahk.togglyfiers.network.TogglyfierPacket;
 import com.sarahk.togglyfiers.util.ChunkCoordinates;
 import com.sarahk.togglyfiers.util.MutableItemStack;
 import com.sarahk.togglyfiers.util.NBTTagType;
-import com.sarahk.togglyfiers.util.Packet250CustomPayload;
 import com.sarahk.togglyfiers.util.TBChangeBlockInfo;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -28,7 +31,6 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityBoat;
 import net.minecraft.entity.item.EntityExpBottle;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityEgg;
@@ -37,6 +39,7 @@ import net.minecraft.entity.projectile.EntitySmallFireball;
 import net.minecraft.entity.projectile.EntitySnowball;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -68,11 +71,11 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -86,6 +89,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 
 import static com.sarahk.togglyfiers.blocks.BlockTogglyfier.EnumTogglyfierMode.*;
 import static net.minecraft.block.BlockJukebox.HAS_RECORD;
@@ -93,6 +97,7 @@ import static net.minecraft.block.BlockJukebox.TileEntityJukebox;
 import static net.minecraft.init.Blocks.*;
 import static net.minecraft.init.Items.*;
 import static net.minecraft.util.EnumFacing.*;
+import static net.minecraftforge.fml.relauncher.Side.CLIENT;
 
 public class TileEntityTogglyfier extends TileEntityInventory implements ITickable
 {
@@ -123,7 +128,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	public static final float PLAYER_YAW_WEST = 270.0f;
 	private static final float PLAYER_YAW_EAST = 90.0f;
 	
-	private final NonNullList<ItemStack> inventory = NonNullList.<ItemStack> withSize(3, ItemStack.EMPTY);
+	private final NonNullList<ItemStack> inventory = NonNullList.<ItemStack> withSize(DEFAULT_INTERNAL_INVENTORY_SIZE, ItemStack.EMPTY);
 	private final MutableItemStack[] tbSlots;
 	private final ArrayList<TBChangeBlockInfo> changeBlocks = new ArrayList<>();
 	private final List<ChunkCoordinates> containerRegistry = new ArrayList<>();
@@ -160,14 +165,13 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 			SPECKLED_MELON, SPAWN_EGG, EXPERIENCE_BOTTLE, FIRE_CHARGE, WRITABLE_BOOK,
 			WRITTEN_BOOK, EMERALD
 		};
-	private final int recordIDOffset = 2256;
 	private final Item[] records =
 		new Item[] {
 			RECORD_13, RECORD_CAT, RECORD_BLOCKS, RECORD_CHIRP, RECORD_FAR, RECORD_MALL,
 			RECORD_MELLOHI, RECORD_STAL, RECORD_STRAD, RECORD_WARD, RECORD_11, RECORD_WAIT
 		};
 	private boolean isCreative = false;
-	@Nonnull private String customName = "";
+	@NotNull private String customName = "";
 	private EnumTogglyfierMode mode = EnumTogglyfierMode.EDIT;
 	private boolean powered = false;
 	private Integer[][] priorityList = PRIORITY_LIST;
@@ -179,7 +183,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	private IBlockState hideAsBlock = null;
 	private boolean guiNeedsReplenishUpdate = false;
 	private short clientChangeBlockCount = 0;
-	// This array stores vanilla blocks such that their index is the ID associated with that block back in 1.3.2.
+	// This array stores vanilla blocks such that their index is the ID associated with the ID of that block back in 1.3.2.
 	private final Block[] blocksInIDOrder = new Block[] {
 		Blocks.AIR,
 		STONE, GRASS, DIRT, COBBLESTONE, PLANKS,
@@ -213,19 +217,18 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		JUNGLE_STAIRS
 	};
 	private boolean hasHadAChangeToFreakingLoad;
-	private final int numberOfChangeBlocks;
+	private int numberOfChangeBlocks;
 	
-	// For stability reasons, it's somewhat necessary to keep a no-args constructor for tile entities.
+	// Forge replies on this constructor for pre-existing TileEntities during the loading of a world.
+	// Used alongside ReadFromNBT.
 	public TileEntityTogglyfier()
 	{
-		this(Minecraft.getMinecraft().getIntegratedServer().worlds[Minecraft.getMinecraft().player.dimension]);
+		this(null);
 	}
 	
 	public TileEntityTogglyfier(World worldin)
 	{
 		this(DEFAULT_INTERNAL_INVENTORY_SIZE, worldin, 10);
-		
-		//TODO: Notify the listener registry about the new TileEntityTogglyfier.
 	}
 	
 	private TileEntityTogglyfier(final int internalInventorySize, World worldIn, int numChangeBlocks)
@@ -235,6 +238,8 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		containerCheckRadius = (byte) ModConfig.getInt(ModConfig.TogglyfierOptions.CONTAINER_CHECK_RADIUS);
 		numberOfChangeBlocks = numChangeBlocks;
 		tbSlots = new MutableItemStack[Math.max(3, internalInventorySize)];
+		
+		//TODO: Notify the listener registry about the new TileEntityTogglyfier.
 	}
 	
 	public static void writeItemStackToPacket(ItemStack stack, DataOutputStream stream)
@@ -242,7 +247,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		throw new NotImplementedException("writeItemStackToPacket is not implemented!");
 	}
 	
-	/**
+	/*
 	 * signs and mobSpawners use this to send text and meta-data
 	public Packet getAuxillaryInfoPacket()
 	{
@@ -288,8 +293,97 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	@Override
 	public SPacketUpdateTileEntity getUpdatePacket()
 	{
-		SPacketUpdateTileEntity result =new SPacketUpdateTileEntity(this.pos, 9, this.getUpdateTag());
-		return new SPacketUpdateTileEntity(this.pos, 9, this.getUpdateTag());
+		NBTTagCompound tagCompound = this.getUpdateTag();
+		
+		// This is the part where we add any information that is relevant to the TE and its update.
+		// Specifically, this information is above and beyond the "default" information.
+		// The default information includes the registry name and blockpos.
+		tagCompound.setInteger("dim", getWorld().provider.getDimension());
+		tagCompound.setByte("mode", (byte) this.mode.ordinal());
+		tagCompound.setBoolean("powered", this.isPowered());
+		tagCompound.setShort("size", (short) this.changeBlocks.size());
+		tagCompound.setByte("containerCheckRadius", this.containerCheckRadius);
+		
+		if(hideAsBlock != null)
+		{
+			tagCompound.setInteger("hideAsBlock", Block.getStateId(hideAsBlock));
+		}
+		
+		NBTTagCompound[] itemStackCompound = new NBTTagCompound[2];
+		for(int i = 0; i<2; ++i)
+		{
+			itemStackCompound[i] = new NBTTagCompound();
+			if(tbSlots[i]==null)
+			{
+				ItemStack.EMPTY.writeToNBT(itemStackCompound[i]);
+			}
+			else
+			{
+				tbSlots[i].toItemStack().writeToNBT(itemStackCompound[i]);
+			}
+			tagCompound.setTag("slot" + i, itemStackCompound[i]);
+		}
+		
+		return new SPacketUpdateTileEntity(this.pos, 0, tagCompound);
+	}
+	
+	@Override
+	public void onDataPacket(net.minecraft.network.NetworkManager net, net.minecraft.network.play.server.SPacketUpdateTileEntity pkt)
+	{
+		// TODO: Make sure that this corresponds to the method above, getUpdatePacket()
+		if(pkt.getTileEntityType() != 0)
+		{
+			return;
+		}
+		
+		// I know that this isn't the right way to do this, but TO START, I think it's a decent standin.
+		NBTTagCompound newInfo = pkt.getNbtCompound();
+		if(pkt.getPos().compareTo(getPos())!=0 || newInfo.getInteger("dim") != world.provider.getDimension())
+		{
+			Logger.getGlobal().info("Togglyfiers: Someone moved my cheese!\nA togglyfier at " + this.getPos() + " in dimension " + world.provider.getDimension() + " is now at " + pkt.getPos() +
+										" in dimenision " + newInfo.getInteger("dim") + "\nThat's not supposed to happen!");
+			setMode(LOCKDOWN);
+		}
+		
+		this.powered = newInfo.getBoolean("powered");
+		this.containerCheckRadius = newInfo.getByte("containerCheckRadius");
+		
+		IBlockState newHideAsBlock = Block.getStateById(newInfo.getInteger("hideAsBlock"));
+		if(newHideAsBlock != hideAsBlock)
+		{
+			this.setHideAsBlock(newHideAsBlock);
+		}
+		
+		for(int i = 0; i<2; ++i)
+		{
+			NBTTagCompound itemStackTag = newInfo.getCompoundTag("slot" + i);
+			tbSlots[i] = new MutableItemStack(itemStackTag);
+		}
+		
+		if(newInfo.getShort("size") != this.changeBlocks.size())
+		{
+			readFromChangeBlocks();
+		}
+		
+		EnumTogglyfierMode newMode = EnumTogglyfierMode.values()[newInfo.getByte("mode")];
+		if(newMode != mode)
+		{
+			this.setMode(newMode);
+		}
+	}
+	
+	private void setHideAsBlock(final IBlockState newHideAsBlock)
+	{
+		if(newHideAsBlock.getBlock()==Blocks.AIR)
+		{
+			hideAsBlock = null;
+		}
+		else
+		{
+			hideAsBlock = newHideAsBlock;
+		}
+		
+		getWorld().scheduleUpdate(getPos(), ModBlocks.togglyfier, 0);
 	}
 	
 	private short getClientChangeBlockCount()
@@ -345,7 +439,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		containerCheckRadius = input;
 	}
 	
-	public void setMode(@Nonnull EnumTogglyfierMode mode)
+	public void setMode(@NotNull EnumTogglyfierMode mode)
 	{
 		this.mode = mode;
 		
@@ -481,7 +575,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 				this.dropItemsFromNBT(nbt);
 			}
 			
-			this.setPowered(getWorld().isBlockIndirectlyGettingPowered(getPos())>0);
+			this.setPowered(getWorld().getRedstonePowerFromNeighbors(getPos())>0);
 			this.waitingOnUpdate = false;
 			this.placeBlocks();
 			this.ticksLeft = 4;
@@ -489,15 +583,16 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		}
 		else
 		{
-			final int size = this.changeBlocks.size();
-			int var3;
-			TBChangeBlockInfo var6;
-			TileEntityChangeBlock var7;
-			int x = 1/0;    // Yes, this throws an exception. That's the point.
+			assert false;
 		}
 		
-		
 		getWorld().setBlockState(getPos(), ModBlocks.togglyfier.getStateByMode(mode));
+	}
+	
+	@Override
+	public Container getContainer()
+	{
+		return null;
 	}
 	
 	@NotNull
@@ -810,7 +905,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	@Override
 	public boolean isItemValidForSlot(final int index, @NotNull final ItemStack stack)
 	{
-		assert(index < 3);
+		assert(index < 12);
 		return index==0 ? stack.getItem()==Item.getItemFromBlock(ModBlocks.changeBlock) : stack.getItem()!=Item.getItemFromBlock(ModBlocks.togglyfier);
 	}
 	
@@ -985,7 +1080,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 			new TextComponentTranslation(getName());
 	}
 	
-	private boolean isCreative()
+	public boolean isCreative()
 	{
 		return isCreative;
 	}
@@ -1021,9 +1116,9 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	{
 		if(isReady())
 		{
-			boolean var1 = getWorld().isBlockIndirectlyGettingPowered(getPos())>0;
+			boolean powered = getWorld().getRedstonePowerFromNeighbors(getPos())>0;
 			
-			if(this.isPowered()!=var1)
+			if(this.isPowered()!=powered)
 			{
 				if(this.processing.get())
 				{
@@ -1033,15 +1128,20 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 				{
 					this.processing.set(true);
 					this.retrieveBlocks();
-					this.setPowered(var1);
+					this.setPowered(powered);
 					this.checkContainerRegistry();
 					this.placeBlocks();
-					getWorld().setBlockState(getPos(), ModBlocks.togglyfier.getStateByMode(var1 ? ACTIVATED : DEACTIVATED));
+					getWorld().setBlockState(getPos(), ModBlocks.togglyfier.getStateByMode(powered ? ACTIVATED : DEACTIVATED));
 					this.ticksLeft = 4;
 					this.processing.set(false);
 				}
 			}
 		}
+	}
+	
+	public void deregisterChangeBlock(BlockPos pos)
+	{
+		deregisterChangeBlock(pos.getX(), pos.getY(), pos.getZ());
 	}
 	
 	public void deregisterChangeBlock(int var1, int var2, int var3)
@@ -1072,7 +1172,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	public int findChangeBlock(final int x, final int y, final int z)
 	{
 		final int size = this.changeBlocks.size();
-		for(int changeBlockIndex = 0; changeBlockIndex<size; changeBlockIndex++)
+		for(int changeBlockIndex = 0; changeBlockIndex<size; ++changeBlockIndex)
 		{
 			final TBChangeBlockInfo changeBlock = this.changeBlocks.get(changeBlockIndex);
 			final BlockPos pos = changeBlock.getBlockPos();
@@ -1149,9 +1249,15 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		return result;
 	}
 	
-	@Nonnull
-	public ItemStack findFirstInContainer(@Nonnull IInventory inventory, @Nonnull Predicate<ItemStack> isTarget, int requiredAmount)
+	@NotNull
+	public ItemStack findFirstInContainer(@NotNull IInventory inventory, @NotNull Predicate<ItemStack> isTarget, int requiredAmount)
 	{
+		assert requiredAmount <= 1;
+		if(Math.abs(requiredAmount) > 1)
+		{
+			return ItemStack.EMPTY;
+		}
+		
 		inventory = inventory instanceof TileEntityTogglyfier ? getReplenisher() : inventory;
 		
 		int sizeInventory = inventory.getSizeInventory();
@@ -1159,35 +1265,35 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		{
 			ItemStack var10 = inventory.getStackInSlot(var9);
 			
-			if(!var10.isEmpty())
+			if(!var10.isEmpty() && isTarget.test(var10))
 			{
-				if(isTarget.test(var10))
+				switch(requiredAmount)
 				{
-					if(requiredAmount==0)
+				case 0:
+					break;
+				case -1:
+					if(!isCreative())
 					{
-						return var10;
-					}
-					
-					if(requiredAmount==-1)
-					{
-						if(!isCreative())
-						{
-							var10.damageItem(1, getFakePlayer());
-							
-							if(var10.getCount()<=0)
-							{
-								inventory.setInventorySlotContents(var9, ItemStack.EMPTY);
-							}
-						}
+						var10.damageItem(1, getFakePlayer());
 						
-						return var10;
+						if(var10.getCount()<=0)
+						{
+							inventory.setInventorySlotContents(var9, ItemStack.EMPTY);
+						}
 					}
-					
-					if(requiredAmount>0)
+					break;
+				case 1:
+					if(isCreative())
 					{
-						return isCreative() ? new ItemStack(var10.getItem(), requiredAmount, var10.getItemDamage()) : inventory.decrStackSize(var9, requiredAmount);
+						var10 = new ItemStack(var10.getItem(), requiredAmount, var10.getItemDamage());
 					}
+					else
+					{
+						var10 = inventory.decrStackSize(var9, requiredAmount);
+					}
+					break;
 				}
+				return var10;
 			}
 		}
 		return ItemStack.EMPTY;
@@ -1211,7 +1317,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					return result;
 				}
 			}
-		}	// Break outer
+		}
 		
 		return result;
 	}
@@ -1241,7 +1347,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	
 	public boolean isOwningTogglyfier(ItemStack stack)
 	{
-		if(BlockChangeBlock.stackHasTogglyfierInfo(stack))
+		if(BlockChangeBlock.doesStackHaveTogglyfierInfo(stack))
 		{
 			NBTTagCompound var2 = stack.getTagCompound();
 			return var2!=null && var2.getInteger("Dim")==getWorld().provider.getDimension() && var2.getInteger("X")==getPosX() && var2.getInteger("Y")==getPosY() &&
@@ -1300,14 +1406,11 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					{
 						writeItemStackToPacket(itemStack, var5);
 					}
-					
-					Packet250CustomPayload var11 = new Packet250CustomPayload("Togglyfiers", var4.toByteArray());
 					var5.close();
 					
-					for(final EntityPlayerMP var8 : var2)
-					{
-						Minecraft.getMinecraft().getConnection().handleCustomPayload(var11);
-					}
+					TogglyfierPacket var11 = new TogglyfierPacket.TogglyfierInventoryChangedPacket("Togglyfiers", var4.toByteArray());
+					
+					TogglyfierNetworkHandler.sendToAllPlayers(var11);
 				}
 				catch(IOException var9)
 				{
@@ -1360,7 +1463,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		}
 	}
 	
-	private void retrieveBlocks()
+	public void retrieveBlocks()
 	{
 		int var1 = this.getIndexFromPower();
 		
@@ -1377,11 +1480,17 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 				IBlockState blockState = getWorld().getBlockState(pos);
 				Block block = blockState.getBlock();
 				
-				if(pullStack.getItem()!=Items.AIR && !changeBlock.getOverride(var1))
+				if(pullStack.isEmpty() || changeBlock.getOverride(var1))
+				{
+					if(block!=Blocks.AIR)
+					{
+						block.dropBlockAsItem(world, pos, blockState, 0);
+					}
+				}
+				else
 				{
 					int blockMeta = blockState.getBlock().getMetaFromState(blockState);
 					int var9 = ModConfig.getItemFlags(pullStack.toItemStack());
-					NBTTagCompound var11;
 					
 					if(ModConfig.isExpectedBlock(pullStack.toItemStack(), block)
 						&& (!Item.getItemFromBlock(block).getHasSubtypes()
@@ -1400,12 +1509,12 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 						
 						if(block instanceof BlockContainer)
 						{
+							NBTTagCompound var11;
 							var11 = new NBTTagCompound();
 							TileEntity var16 = getWorld().getTileEntity(pos);
 							assert var16!=null;
 							var16.writeToNBT(var11);
-							var11.setString("Togglyfiers_BlockID", block.getRegistryName().toString());
-							var11.setByte("Togglyfiers_Metadata", (byte) blockMeta);
+							var11.setInteger("Togglyfiers_BlockStateID", Block.getStateId(blockState));	//keyword
 							boolean var13 = var16 instanceof IInventory;
 							
 							if(var13)
@@ -1442,10 +1551,12 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					}
 					else if(block==OBSIDIAN && itemID==Items.BUCKET)
 					{
+						// This one is definitely interesting. It seems we just let players convert obsidian into lava.
 						pullStack.setItem(LAVA_BUCKET);
 					}
 					else if((block==STANDING_SIGN || block==WALL_SIGN) && itemID==Items.SIGN)
 					{
+						NBTTagCompound var11;
 						this.incrStack(pullStack);
 						var11 = new NBTTagCompound();
 						TileEntity var12 = getWorld().getTileEntity(pos);
@@ -1456,14 +1567,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					}
 					else if(block!=Blocks.AIR)
 					{
-						block.dropBlockAsItem(getWorld(), pos, blockState, 0);
-					}
-				}
-				else
-				{
-					if(blockState!=Blocks.AIR.getDefaultState())
-					{
-						blockState.getBlock().dropBlockAsItem(getWorld(), pos, getWorld().getBlockState(pos), 0);
+						block.dropBlockAsItem(world, pos, blockState, 0);
 					}
 				}
 				
@@ -1472,7 +1576,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		}
 	}
 	
-	public void setClientTileEntityInfo(EnumTogglyfierMode var1, boolean powered, short clientChangeBlockCount)
+	public void setTileEntityInfo(EnumTogglyfierMode var1, boolean powered, short clientChangeBlockCount)
 	{
 		this.mode = var1;
 		this.setPowered(powered);
@@ -1495,7 +1599,21 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		getWorld().scheduleUpdate(getPos(), ModBlocks.togglyfier, 0);
 	}
 	
-	private void switchMode()
+	public void setHiddenBlock(IBlockState var1)
+	{
+		if(var1.getBlock()==Blocks.AIR)
+		{
+			this.hideAsBlock = null;
+		}
+		else
+		{
+			this.hideAsBlock = var1;
+		}
+		
+		getWorld().scheduleUpdate(getPos(), ModBlocks.togglyfier, 0);
+	}
+	
+	public void switchMode()
 	{
 		if(this.mode==EnumTogglyfierMode.EDIT)
 		{
@@ -1697,10 +1815,9 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	
 	private static boolean areItemStacksEqual(ItemStack var1, ItemStack var2)
 	{
+		// return ItemStack.areItemStacksEqual(var1, var2);
 		return var1!=null && var2!=null ? var1.getItem()==var2.getItem() && var1.getItemDamage()==var2.getItemDamage() : var1==null && var2==null;
 	}
-	
-	private Block blockFromID(int id) { return blocksInIDOrder[id]; }
 	
 	private void checkContainerRegistry()
 	{
@@ -1831,6 +1948,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					var10.setInteger("x", pos.getX());
 					var10.setInteger("y", pos.getY());
 					var10.setInteger("z", pos.getZ());
+					int recordIDOffset = 2256;
 					var10.setInteger("Record", recordIDOffset + itemDamage - 1);
 					var10.setString("Togglyfiers_BlockID", Objects.requireNonNull(JUKEBOX.getRegistryName()).toString());
 					changeBlockInfo.getContainerNBT()[var3] = var10;
@@ -1889,7 +2007,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		}
 	}
 	
-	private void dropItemsFromNBT(NBTTagCompound var1)
+	public void dropItemsFromNBT(NBTTagCompound var1)
 	{
 		if(var1==null)
 		{
@@ -1897,7 +2015,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		}
 		
 		Item var2 = Item.getItemFromBlock(ModBlocks.togglyfier);
-		@Nonnull Block var3 = Blocks.AIR;
+		@NotNull Block var3 = Blocks.AIR;
 		
 		if(!(var2 instanceof ItemBlock))
 		{
@@ -1932,7 +2050,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		}
 	}
 	
-	private int findChangeBlock(@Nonnull final Vec3i pos)
+	private int findChangeBlock(@NotNull final Vec3i pos)
 	{
 		return findChangeBlock(pos.getX(), pos.getY(), pos.getZ());
 	}
@@ -1942,13 +2060,13 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		return blocksInIDOrder[id];
 	}
 	
-	private BlockPos getPlacementLocation(@Nonnull TBChangeBlockInfo changeBlockInfo, int var2, boolean var3)
+	private BlockPos getPlacementLocation(@NotNull TBChangeBlockInfo changeBlockInfo, int var2, boolean var3)
 	{
 		int[] data = getPlacementLocationWithFacing(changeBlockInfo, var2, var3);
 		return new BlockPos(data[0], data[1], data[2]);
 	}
 	
-	private int[] getPlacementLocationWithFacing(@Nonnull final TBChangeBlockInfo changeBlockInfo, int var2, boolean var3)
+	private int[] getPlacementLocationWithFacing(@NotNull final TBChangeBlockInfo changeBlockInfo, int var2, boolean var3)
 	{
 		BlockPos pos = changeBlockInfo.getBlockPos();
 		int[] var4 = new int[]
@@ -2011,13 +2129,13 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		}
 	}
 	
-	private static boolean isItemSetToDrop(@Nonnull ItemStack var1)
+	private static boolean isItemSetToDrop(@NotNull ItemStack var1)
 	{
 		return (ModConfig.getItemFlags(var1) & ModConfig.ItemFlags.DROP_AS_ITEM.getBitValue())!=0 || var1.getItem() instanceof ItemFood;
 	}
 	
-	@Nonnull
-	private ItemStack makeStackOfChangeBlocks()
+	@NotNull
+	public ItemStack makeStackOfChangeBlocks()
 	{
 		int var2;
 		
@@ -2134,6 +2252,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 			{
 				Boolean bucketFound = replaceItemInContainerWith(Items.BUCKET, 0, 1, MILK_BUCKET);
 				
+				//This still doesn't seem right. Maybe check the OG code again?
 				if(bucketFound)
 				{
 					item = Items.BUCKET;
@@ -2260,7 +2379,6 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 				{
 					var49 = this.findItemInContainer(item, 0, -1)!=null;
 				}
-				
 				else if(!isCreative())
 				{
 					ItemStack temp = itemStackPush.toItemStack();
@@ -2282,7 +2400,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					changeBlock.getBlockPos().getZ() + HALF));
 				this.decrStack(itemStackPush);
 			}
-/*					else if(item==SPAWN_EGG)
+/*			else if(item==SPAWN_EGG)
 			{
 				ItemMonsterPlacer.spawnCreature(
 					getWorld(),
@@ -2391,9 +2509,6 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 			}
 			else
 			{
-				int var43;
-				int var46;
-				
 				if((var42 & ModConfig.ItemFlags.REQUIRES_TILLED_SOIL.getBitValue())!=0)
 				{
 					if(!this.checkForTilledSoil(changeBlock.getBlockPos().getX(), changeBlock.getBlockPos().getY() - 1, changeBlock.getBlockPos().getZ()))
@@ -2403,8 +2518,8 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					
 					if((var42 & ModConfig.ItemFlags.MELON_AND_PUMPKIN_GROWTH.getBitValue())!=0)
 					{
-						var43 = changeBlock.getBlockPos().getX();
-						var46 = changeBlock.getBlockPos().getZ();
+						int var43 = changeBlock.getBlockPos().getX();
+						int var46 = changeBlock.getBlockPos().getZ();
 						
 						switch(changeBlock.getAlignment().ordinal())
 						{
@@ -2432,11 +2547,12 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 				
 				int[] var45 = this.getPlacementLocationWithFacing(changeBlock, var42, true);
 				
-				Main.setWorldManagerSoundStatus(getWorld(), false);
-				var43 = itemStackPush.getCount();
-				var46 = itemStackPush.getItemDamage();
+				int itemStackPushCount = itemStackPush.getCount();
+				int itemStackPushMeta = itemStackPush.getItemDamage();
 				getFakePlayer().setCurrentEquippedItem(itemStackPush.toItemStack());
-				EnumActionResult var47 = item.onItemUse(
+				
+				Main.setWorldManagerSoundStatus(getWorld(), false);
+				EnumActionResult useItemResult = item.onItemUse(
 					getFakePlayer(),
 					getWorld(),
 					new BlockPos(var45[0], var45[1], var45[2]),
@@ -2447,7 +2563,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					0.0F);
 				Main.setWorldManagerSoundStatus(getWorld(), true);
 				
-				if(var47==EnumActionResult.SUCCESS)
+				if(useItemResult==EnumActionResult.SUCCESS)
 				{
 					Block var53 = getWorld().getBlockState(changeBlock.getBlockPos()).getBlock();
 					ModConfig.addExpectedBlock(itemStackPush.toItemStack(), var53);
@@ -2490,7 +2606,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 						}
 					}
 					
-					this.resetStack(itemStackPush, var43, var46);
+					this.resetStack(itemStackPush, itemStackPushCount, itemStackPushMeta);
 				}
 				else
 				{
@@ -2505,7 +2621,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					assert ItemStack.areItemStacksEqual(stackAfter, var13);
 					assert (result != EnumActionResult.SUCCESS) || ItemStack.areItemStacksEqual(stackAfter, itemStackPush.toItemStack());
 					
-					if(var13==itemStackPush.toItemStack() && var43==itemStackPush.getCount() && var46==itemStackPush.getItemDamage())
+					if(var13==itemStackPush.toItemStack() && itemStackPushCount==itemStackPush.getCount() && itemStackPushMeta==itemStackPush.getItemDamage())
 					{
 						BlockPos offset = BlockPos.ORIGIN.offset(changeBlock.getAlignment());
 						
@@ -2563,8 +2679,8 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 						
 						if(var29!=null)
 						{
-							var43 = itemStackPush.getCount();
-							var46 = itemStackPush.getItemDamage();
+							itemStackPushCount = itemStackPush.getCount();
+							itemStackPushMeta = itemStackPush.getItemDamage();
 							
 							getFakePlayer().setCurrentEquippedItem(itemStackPush.toItemStack());
 							if(var29.applyPlayerInteraction(getFakePlayer(), new Vec3d(0,0,0), EnumHand.MAIN_HAND)==EnumActionResult.SUCCESS)
@@ -2575,7 +2691,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 								{
 									if(itemStackPush.toItemStack()==var69)
 									{
-										this.resetStack(itemStackPush, var43, var46);
+										this.resetStack(itemStackPush, itemStackPushCount, itemStackPushMeta);
 									}
 									else
 									{
@@ -2591,9 +2707,9 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 								getFakePlayer().setCurrentEquippedItem(itemStackPush.toItemStack());
 								var29.applyPlayerInteraction(getFakePlayer(), new Vec3d(0,0,0), EnumHand.MAIN_HAND);
 								
-								if(itemStackPush.getCount()!=var43 || itemStackPush.getItemDamage()!=var46)
+								if(itemStackPush.getCount()!=itemStackPushCount || itemStackPush.getItemDamage()!=itemStackPushMeta)
 								{
-									this.resetStack(itemStackPush, var43, var46);
+									this.resetStack(itemStackPush, itemStackPushCount, itemStackPushMeta);
 									continue;
 								}
 							}
@@ -2625,7 +2741,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 						double var38 = changeBlock.getBlockPos().getY() + HALF;
 						double var40 = changeBlock.getBlockPos().getZ() + var71*HALF + HALF;
 						//ModLoader.dispenseEntity(getWorld(), itemStackPush, getWorld().rand, getPos(), var68, var71, var36, var38, var40);
-						this.resetStack(itemStackPush, var43, var46);
+						this.resetStack(itemStackPush, itemStackPushCount, itemStackPushMeta);
 					}
 					else if(!ItemStack.areItemStacksEqual(itemStackPush.toItemStack(), var13))
 					{
@@ -2633,7 +2749,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 					}
 					else
 					{
-						this.resetStack(itemStackPush, var43, var46);
+						this.resetStack(itemStackPush, itemStackPushCount, itemStackPushMeta);
 					}
 				}
 			}
@@ -2654,41 +2770,50 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	
 	private void readFromChangeBlocks()
 	{
-		int size = this.changeBlocks.size();
-		for(int var1 = 0; var1<size; ++var1)
+		try
 		{
-			TBChangeBlockInfo changeBlockInfo1 = this.changeBlocks.get(var1);
-			TileEntityChangeBlock var3 = (TileEntityChangeBlock) getWorld().getTileEntity(changeBlockInfo1.getBlockPos());
-			if (var3==null) { setMode(LOCKDOWN); break; }
-			TBChangeBlockInfo changeBlockInfo2 = new TBChangeBlockInfo(var3.getChangeBlock());
-			
-			for(int var5 = 0; var5<changeBlockInfo1.getCurrent().length; ++var5)
+			int size = this.changeBlocks.size();
+			for(int var1 = 0; var1<size; ++var1)
 			{
-				MutableItemStack cb1Stack = changeBlockInfo1.getCurrent()[var5];
-				MutableItemStack cb2Stack = changeBlockInfo2.getCurrent()[var5];
+				TBChangeBlockInfo changeBlockInfo1 = this.changeBlocks.get(var1);
+				TileEntityChangeBlock var3 = (TileEntityChangeBlock) getWorld().getTileEntity(changeBlockInfo1.getBlockPos());
+				TBChangeBlockInfo changeBlockInfo2 = new TBChangeBlockInfo(var3.getChangeBlock());
 				
-				if(!cb1Stack.isEmpty())
+				for(int var5 = 0; var5<changeBlockInfo1.getCurrent().length; ++var5)
 				{
-					if(TileEntityTogglyfier.areItemStacksEqual(cb1Stack.toItemStack(), cb2Stack.toItemStack()))
-					{
-						changeBlockInfo2.getSavedMetadata()[var5] = changeBlockInfo1.getSavedMetadata()[var5];
-					}
+					MutableItemStack cb1Stack = changeBlockInfo1.getCurrent()[var5];
+					MutableItemStack cb2Stack = changeBlockInfo2.getCurrent()[var5];
 					
-					if(cb1Stack.getCount()==0 && cb2Stack.isEmpty())
+					if(!cb1Stack.isEmpty())
 					{
-						changeBlockInfo2.getCurrent()[var5].set(cb1Stack);
+						if(TileEntityTogglyfier.areItemStacksEqual(cb1Stack.toItemStack(), cb2Stack.toItemStack()))
+						{
+							changeBlockInfo2.getSavedMetadata()[var5] = changeBlockInfo1.getSavedMetadata()[var5];
+						}
+						
+						if(cb1Stack.getCount()==0 && cb2Stack.isEmpty())
+						{
+							changeBlockInfo2.getCurrent()[var5].set(cb1Stack);
+						}
+						
+						if(!cb2Stack.isEmpty() && cb1Stack.getItem()==cb2Stack.getItem())
+						{
+							changeBlockInfo2.getExpectedBlock()[var5] = changeBlockInfo1.getExpectedBlock()[var5];
+						}
+						
+						changeBlockInfo2.getContainerNBT()[var5] = changeBlockInfo1.getContainerNBT()[var5];
 					}
-					
-					if(!cb2Stack.isEmpty() && cb1Stack.getItem()==cb2Stack.getItem())
-					{
-						changeBlockInfo2.getExpectedBlock()[var5] = changeBlockInfo1.getExpectedBlock()[var5];
-					}
-					
-					changeBlockInfo2.getContainerNBT()[var5] = changeBlockInfo1.getContainerNBT()[var5];
 				}
+				
+				this.changeBlocks.set(var1, changeBlockInfo2);
 			}
-			
-			this.changeBlocks.set(var1, changeBlockInfo2);
+		}
+		catch(Exception e)
+		{
+			Logger.getGlobal().warning("Togglyfiers encountered an exception:");
+			Logger.getGlobal().warning(e.getMessage());
+			Logger.getGlobal().warning(e.getStackTrace().toString());
+			setMode(LOCKDOWN);
 		}
 	}
 	
@@ -2773,7 +2898,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		}
 	}
 	
-	@Nonnull
+	@NotNull
 	private IInventory getReplenisher()
 	{
 		if(replenisher == null)
@@ -2783,7 +2908,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		return replenisher;
 	}
 	
-	@Nonnull
+	@NotNull
 	private TogglyfierPlayer getFakePlayer()
 	{
 		if(getWorld() != null && (fakePlayer == null || fakePlayer.getEntityWorld() == null))
@@ -2876,15 +3001,11 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		}
 	}
 	
-	private void togglePull()         { throw new NotImplementedException("togglePull is NYI!"); }
-	
-	private void togglePush()         { throw new NotImplementedException("togglePush is NYI!"); }
-	
 	static class InventoryReplenish implements IInventory
 	{
-		@Nonnull final TileEntityTogglyfier togglyfier;
+		@NotNull final TileEntityTogglyfier togglyfier;
 		
-		InventoryReplenish(@Nonnull TileEntityTogglyfier var1)
+		InventoryReplenish(@NotNull TileEntityTogglyfier var1)
 		{
 			togglyfier = var1;
 		}
@@ -2930,6 +3051,7 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 			{
 				flag &= (togglyfier.tbSlots[i]!=null && !togglyfier.tbSlots[i].toItemStack().isEmpty() && togglyfier.tbSlots[i].getCount()>0);
 			}
+			
 			return flag;
 		}
 		
@@ -3155,19 +3277,16 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 	private static class TogglyfierPlayer extends FakePlayer
 	{
 		private ItemStack equippedStack = ItemStack.EMPTY;
+		final TileEntityTogglyfier togglyfier;
 		
 		TogglyfierPlayer(final TileEntityTogglyfier tileEntityTogglyfier, World world)
 		{
-			super(world == null
-					  ? null
-					  : world
-							.getMinecraftServer()
-							.getWorld(
-								world
-									.provider
-									.getDimension()),
+			super(world == null ? null
+					  : world.getMinecraftServer().getWorld(world.provider.getDimension()),
 				new GameProfile(UUID.randomUUID(),
 				"Togglyfiers Fake Player"));
+			this.togglyfier = tileEntityTogglyfier;
+			this.inventory = new InventoryFakePlayer(tileEntityTogglyfier, this);
 		}
 		
 		public void setCurrentEquippedItem(ItemStack stack)
@@ -3179,46 +3298,180 @@ public class TileEntityTogglyfier extends TileEntityInventory implements ITickab
 		{
 			return equippedStack;
 		}
+		
+		class InventoryFakePlayer extends InventoryPlayer implements IInventory
+		{
+			final TileEntityTogglyfier togglyfier1;
+			
+			public InventoryFakePlayer(TileEntityTogglyfier var1, EntityPlayer var2)
+			{
+				super(var2);
+				this.togglyfier1 = var1;
+				this.currentItem = 0;
+			}
+			
+			public void setUsedItem(ItemStack var1)
+			{
+				this.mainInventory.set(0, var1);
+			}
+			
+			@Override
+			@SideOnly(CLIENT)
+			public void setPickedItemStack(ItemStack stack)
+			{
+				this.currentItem = 0;
+			}
+			
+			public boolean consumeInventoryItem(Item var1)
+			{
+				return this.togglyfier1.findItemInContainer(var1, 0, 1) != null;
+			}
+			
+			/**
+			 * Switch the current item to the next one or the previous one
+			 */
+			@Override
+			public void changeCurrentItem(int var1)
+			{
+				this.currentItem = 0;
+			}
+			
+			/**
+			 * Returns the name of the inventory.
+			 */
+			@Override
+			public String getName()
+			{
+				return "Fake Player Inventory";
+			}
+			
+			/**
+			 * Do not make give this method the name canInteractWith because it clashes with Container
+			 */
+			@Override
+			public boolean isUsableByPlayer(EntityPlayer player)
+			{
+				return true;
+			}
+		}
 	}
 	
 	public static class ContainerTogglyfier extends Container
 	{
-		@Nonnull private final TileEntityTogglyfier tileEntity;
+		@NotNull private final TileEntityTogglyfier tileEntity;
+		private boolean isReady;
 		
-		public ContainerTogglyfier(@Nonnull InventoryPlayer player, @Nonnull TileEntityTogglyfier tileEntity, boolean readyMode)
+		public ContainerTogglyfier(IInventory var1, TileEntityTogglyfier var2, boolean var3)
 		{
-			this.tileEntity = tileEntity;
+			this.tileEntity = var2;
+			this.isReady = var3;
+			Item[] var4 = new Item[] {Item.getItemFromBlock(ModBlocks.togglyfier), Item.getItemFromBlock(ModBlocks.changeBlock)};
+			int var5;
+			int var6;
 			
-			this.addSlotToContainer(new Slot(tileEntity, 0, 43, 34));
-			
-			for(int y = 0; y<3; y++)
+			if (var3)
 			{
-				for(int x = 0; x<9; x++)
+				for (var5 = 0; var5 < 3; ++var5)
 				{
-					this.addSlotToContainer(new Slot(player, x + y*9 + 9, x*18 + 8, 84 + y*18));
+					for (var6 = 0; var6 < 3; ++var6)
+					{
+						this.addSlotToContainer(new SlotTogglyfier(tileEntity, 3 + var6 + var5 * 3, 116 + var6 * 18, 17 + var5 * 18, var4, false));
+					}
+				}
+			}
+			else
+			{
+				this.addSlotToContainer(new SlotTogglyfier(tileEntity, 0, 134, 36, var4, false));
+				this.addSlotToContainer(new SlotTogglyfier(tileEntity, 1, 134, 61, var4, false));
+				this.addSlotToContainer(new SlotTogglyfier(tileEntity, 2, 37, 47, new Item[] {Item.getItemFromBlock(ModBlocks.changeBlock)}, true, tileEntity));
+			}
+			
+			for (var5 = 0; var5 < 3; ++var5)
+			{
+				for (var6 = 0; var6 < 9; ++var6)
+				{
+					this.addSlotToContainer(new Slot(var1, var6 + var5 * 9 + 9, 8 + var6 * 18, 84 + var5 * 18));
 				}
 			}
 			
-			for(int x = 0; x<9; x++)
+			for (var5 = 0; var5 < 9; ++var5)
 			{
-				this.addSlotToContainer(new Slot(player, x, 8 + x*18, 142));
+				this.addSlotToContainer(new Slot(var1, var5, 8 + var5 * 18, 142));
 			}
 		}
 		
-		public ContainerTogglyfier(@Nonnull InventoryPlayer player, @Nonnull TileEntityTogglyfier tileEntity)
-		{
-			this(player, tileEntity, false);
-		}
-		
 		@Override
-		public boolean canInteractWith(EntityPlayer playerIn)
+		public boolean canInteractWith(EntityPlayer var1)
 		{
-			return tileEntity.isUsableByPlayer(playerIn);
+			return this.tileEntity.isUsableByPlayer(var1) && this.isReady == this.tileEntity.isReady();
 		}
 		
-		@Nonnull public TileEntityTogglyfier getTogglyfier()
+		public void retrySlotClick(int var1, int var2, boolean var3, EntityPlayer var4)
+		{
+			this.slotClick(var1, var2, ClickType.PICKUP, var4);
+		}
+		
+		public TileEntityTogglyfier getToggleBlock()
+		{
+			return this.tileEntity;
+		}
+		
+		@NotNull public TileEntityTogglyfier getTogglyfier()
 		{
 			return tileEntity;
 		}
+		
+		public TileEntityChangeBlock inventory;
+		
+		public class SlotTogglyfier extends Slot
+		{
+			private Item[] restrictedItems;
+			private boolean allowOnlyRestricted;
+			private TileEntityTogglyfier tileEntity;
+			
+			public SlotTogglyfier(IInventory var1, int var2, int var3, int var4, Item[] var5, boolean var6)
+			{
+				super(var1, var2, var3, var4);
+				this.restrictedItems = var5;
+				this.allowOnlyRestricted = var6;
+			}
+			
+			public SlotTogglyfier(IInventory var1, int var2, int var3, int var4, Item[] var5, boolean var6, TileEntityTogglyfier var7)
+			{
+				this(var1, var2, var3, var4, var5, var6);
+				this.tileEntity = var7;
+			}
+			
+			/**
+			 * Check if the stack is a valid item for this slot. Always true beside for the armor slots.
+			 */
+			@Override
+			public boolean isItemValid(ItemStack var1)
+			{
+				if (this.restrictedItems== null)
+				{
+					return true;
+				}
+				else
+				{
+					for (int var2 = 0; var2 < this.restrictedItems.length; ++var2)
+					{
+						if (var1.getItem() == this.restrictedItems[var2])
+						{
+							if (this.allowOnlyRestricted && var1.getItem() == Item.getItemFromBlock(ModBlocks.changeBlock) && this.tileEntity!= null)
+							{
+								return this.tileEntity.isOwningTogglyfier(var1);
+							}
+							
+							return this.allowOnlyRestricted;
+						}
+					}
+					
+					return !this.allowOnlyRestricted;
+				}
+			}
+		}
 	}
+	
+	public long lastClicked;
 }

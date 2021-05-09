@@ -23,7 +23,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class TileEntityChangeBlock extends TileEntityInventory
 {
@@ -307,7 +307,7 @@ public class TileEntityChangeBlock extends TileEntityInventory
 		return var1 >= 0 && var1<this.getSizeInventory() && this.changeBlock.getOverride(var1);
 	}
 	
-	@Nonnull
+	@NotNull
 	public ItemStack getReplenish(int var1)
 	{
 		return var1 >= 0 && var1<this.getSizeInventory() ? this.replenish[var1].toItemStack() : ItemStack.EMPTY;
@@ -511,7 +511,7 @@ public class TileEntityChangeBlock extends TileEntityInventory
 	
 	public static class ContainerChangeBlock extends Container
 	{
-		@Nonnull private final TileEntityChangeBlock tileEntity;
+		@NotNull private final TileEntityChangeBlock tileEntity;
 		
 		public ContainerChangeBlock(final IInventory var1, final TileEntityChangeBlock var2)
 		{

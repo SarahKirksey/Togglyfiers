@@ -1,15 +1,18 @@
 package com.sarahk.togglyfiers.gui;
 
+import com.sarahk.togglyfiers.tileentity.TileEntityTogglyfier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.renderer.RenderItem;
-import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 
 public interface ITogglyfierGuiBase
 {
+	void initGui();
+	TileEntityTogglyfier getTogglyfier();
+	void onGuiClosed();
+	void drawScreen(int winX, int winY, float winZ);
 }
 
 class GuiTogglyfierShortButton extends GuiButton

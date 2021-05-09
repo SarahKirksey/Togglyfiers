@@ -3,6 +3,7 @@
         "state=deactivated": { "model": "togglyfiers:togglyfier_off" },
         "state=activated": { "model": "togglyfiers:togglyfier_on" },
         "state=edit": { "model": "togglyfiers:togglyfier_edit" },
-        "state=lockdown": { "model": "togglyfiers:togglyfier_locked" }
+        "state=lockdown": { "model": "togglyfiers:togglyfier_locked" },
+        "state=mode_ready": { "model": "togglyfiers:togglyfier_edit" }
     }
 }

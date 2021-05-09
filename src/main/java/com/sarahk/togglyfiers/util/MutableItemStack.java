@@ -5,9 +5,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class MutableItemStack
 {
@@ -16,7 +17,7 @@ public class MutableItemStack
 	private int damage = 0;
 	private NBTTagCompound nbt = null;
 	
-	@Nonnull private ItemStack wrappedStack = ItemStack.EMPTY;
+	@NotNull private ItemStack wrappedStack = ItemStack.EMPTY;
 	
 	public MutableItemStack(final Block blockIn)
 	{
@@ -61,7 +62,7 @@ public class MutableItemStack
 		this(new ItemStack(compound));
 	}
 	
-	public MutableItemStack(@Nonnull final ItemStack stack)
+	public MutableItemStack(@NotNull final ItemStack stack)
 	{
 		this(stack.getItem(), stack.getCount(), stack.getMetadata(), stack.getTagCompound());
 	}
@@ -72,7 +73,7 @@ public class MutableItemStack
 		this(stack.item, stack.count, stack.damage, stack.nbt);
 	}
 	
-	@Nonnull public ItemStack toItemStack()
+	@NotNull public ItemStack toItemStack()
 	{
 		return wrappedStack.copy();
 	}
@@ -157,7 +158,7 @@ public class MutableItemStack
 		return nbt;
 	}
 	
-	public void set(@Nonnull ItemStack stack)
+	public void set(@NotNull ItemStack stack)
 	{
 		this.item = stack.getItem();
 		this.damage = stack.getMetadata();
@@ -167,7 +168,7 @@ public class MutableItemStack
 		this.wrappedStack = stack.copy();
 	}
 	
-	public void set(@Nonnull MutableItemStack stack)
+	public void set(@NotNull MutableItemStack stack)
 	{
 		this.item = stack.getItem();
 		this.damage = stack.getMetadata();
@@ -177,7 +178,7 @@ public class MutableItemStack
 		this.wrappedStack = new ItemStack(item, count, damage, nbt);
 	}
 	
-	@Nonnull
+	@NotNull
 	public ItemStack splitStack(int amount)
 	{
 		ItemStack result = wrappedStack.splitStack(amount);

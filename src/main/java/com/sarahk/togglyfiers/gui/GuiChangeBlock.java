@@ -1,14 +1,10 @@
 package com.sarahk.togglyfiers.gui;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.sarahk.togglyfiers.Main;
+import com.sarahk.togglyfiers.items.ItemTogglyfierAssistant;
 import com.sarahk.togglyfiers.tileentity.TileEntityChangeBlock;
-import com.sarahk.togglyfiers.util.Packet250CustomPayload;
+import com.sarahk.togglyfiers.tileentity.TileEntityTogglyfier;
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -19,9 +15,17 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.client.CPacketCustomPayload;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuiChangeBlock extends GuiContainer implements ITogglyfierGuiBase
 {
@@ -72,6 +76,12 @@ public class GuiChangeBlock extends GuiContainer implements ITogglyfierGuiBase
 			this.updateAlignerButtonText();
 			this.buttonList.add(this.guiAlignerButton);
 		}
+	}
+	
+	@Override
+	public TileEntityTogglyfier getTogglyfier()
+	{
+		return tileentCB.getTogglyfier();
 	}
 	
 	/**
@@ -157,19 +167,13 @@ public class GuiChangeBlock extends GuiContainer implements ITogglyfierGuiBase
 							this.drawGradientRect(var13 - 3, var14 - 3, var13 + var12 + 3, var14 - 3 + 1, var18, var18);
 							this.drawGradientRect(var13 - 3, var14 + var16 + 2, var13 + var12 + 3, var14 + var16 + 3, var19, var19);
 							
-							{
-								String var21 = var11.get(0);
-								var21 = "\u00a7" + Integer.toHexString(var6.getRarity().rarityColor.getColorIndex()) + var21;
-								this.fontRenderer.drawStringWithShadow(var21, var13, var14, -1);
-								var14 += 12;
-							}
-							
-							for (int var20 = 1; var20 < var11.size(); ++var20)
+							final int size = var11.size();
+							for (int var20 = 0; var20 < size; ++var20)
 							{
 								String var21 = var11.get(var20);
-								var21 = "\u00a77" + var21;
+								var21 = var20==0? "\u00a7" + Integer.toHexString(var6.getRarity().color.getColorIndex()) + var21 : "\u00a77" + var21;
 								this.fontRenderer.drawStringWithShadow(var21, var13, var14, -1);
-								var14 += 10;
+								var14 += var20==0? 12 : 10;
 							}
 							
 							this.zLevel = 0.0F;
@@ -249,7 +253,7 @@ public class GuiChangeBlock extends GuiContainer implements ITogglyfierGuiBase
 				{
 					var3.writeByte(2);
 					var3.writeByte(2);
-					this.mc.getConnection().getNetworkManager().sendPacket(new Packet250CustomPayload("Togglyfiers", var2.toByteArray()));
+					this.mc.getConnection().sendPacket(new CPacketCustomPayload("Togglyfiers",  new PacketBuffer(Unpooled.buffer().writeBytes(var2.toByteArray()))));
 					var3.close();
 				}
 				catch (IOException var5)
@@ -280,7 +284,7 @@ public class GuiChangeBlock extends GuiContainer implements ITogglyfierGuiBase
 				var2.writeShort(this.tileentCB.getPos().getY());
 				var2.writeInt(this.tileentCB.getPos().getZ());
 				var2.writeByte((this.tileentCB.getOverride(0) ? 1 : 0) | (this.tileentCB.getOverride(1) ? 2 : 0));
-				this.mc.getConnection().getNetworkManager().sendPacket(new Packet250CustomPayload("Togglyfiers", var1.toByteArray()));
+				this.mc.getConnection().sendPacket(new CPacketCustomPayload("Togglyfiers",  new PacketBuffer(Unpooled.buffer().writeBytes(var1.toByteArray()))));
 				var2.close();
 			}
 			catch (IOException var4)
@@ -294,7 +298,8 @@ public class GuiChangeBlock extends GuiContainer implements ITogglyfierGuiBase
 	{
 		if (this.guiAlignerButton != null)
 		{
-			//this.guiAlignerButton.displayString = ItemTogglyfierAssistant.inventoryHasAssistant(this.invPlayer, 2) ? "Remove Aligner" : "Get Aligner";
+			//TODO
+			this.guiAlignerButton.displayString = ItemTogglyfierAssistant.doesInventoryHaveAssistant(this.invPlayer, 2) ? "Remove Aligner" : "Get Aligner";
 		}
 	}
 }

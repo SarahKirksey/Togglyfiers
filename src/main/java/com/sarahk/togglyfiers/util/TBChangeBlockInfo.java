@@ -15,7 +15,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
 
 public class TBChangeBlockInfo
@@ -42,7 +41,7 @@ public class TBChangeBlockInfo
 		this(new BlockPos(x, y, z));
 	}
 	
-	public TBChangeBlockInfo(@Nonnull TBChangeBlockInfo that)
+	public TBChangeBlockInfo(@NotNull TBChangeBlockInfo that)
 	{
 		this();
 		//this.expectedBlock = new Block[] {that.expectedBlock[0], that.expectedBlock[1]};
@@ -65,7 +64,7 @@ public class TBChangeBlockInfo
 		alignment = that.getAlignment();
 	}
 	
-	public TBChangeBlockInfo(@Nonnull NBTTagCompound var1, @Nonnull TileEntity var2)
+	public TBChangeBlockInfo(@NotNull NBTTagCompound var1, @NotNull TileEntity var2)
 	{
 		this();
 		
@@ -124,25 +123,25 @@ public class TBChangeBlockInfo
 		}
 	}
 	
-	@Nonnull
+	@NotNull
 	public EnumFacing getAlignment()
 	{
 		return alignment;
 	}
 	
-	@Nonnull
+	@NotNull
 	public NBTTagCompound[] getContainerNBT()
 	{
 		return containerNBT;
 	}
 	
-	@Nonnull
+	@NotNull
 	public MutableItemStack[] getCurrent()
 	{
 		return current;
 	}
 	
-	@Nonnull
+	@NotNull
 	public Block[] getExpectedBlock()
 	{
 		return expectedBlock;
@@ -163,7 +162,7 @@ public class TBChangeBlockInfo
 		this.containerNBT = containerNBT;
 	}
 	
-	public void setCurrent(@Nonnull MutableItemStack[] current)
+	public void setCurrent(@NotNull MutableItemStack[] current)
 	{
 		this.current = current;
 	}
@@ -273,9 +272,9 @@ public class TBChangeBlockInfo
 		}
 	}
 	
-	@Nonnull private MutableItemStack[] current = new MutableItemStack[] {new MutableItemStack(ItemStack.EMPTY), new MutableItemStack(ItemStack.EMPTY)};
-	@Nonnull private NBTTagCompound[] containerNBT;
-	@Nonnull private Block[] expectedBlock;
-	@Nonnull private EnumFacing alignment;
+	@NotNull private MutableItemStack[] current = new MutableItemStack[] {new MutableItemStack(ItemStack.EMPTY), new MutableItemStack(ItemStack.EMPTY)};
+	@NotNull private NBTTagCompound[] containerNBT;
+	@NotNull private Block[] expectedBlock;
+	@NotNull private EnumFacing alignment;
 	private byte[] savedMetadata;
 }

@@ -4,8 +4,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-
 public class ChunkCoordinates implements Comparable<ChunkCoordinates>
 {
 	public ChunkCoordinates() {}
@@ -104,7 +102,7 @@ public class ChunkCoordinates implements Comparable<ChunkCoordinates>
 		this.z = par3;
 	}
 	
-	@Nonnull
+	@NotNull
 	public BlockPos toBlockPos()
 	{
 		return new BlockPos(getX(), getY(), getZ());

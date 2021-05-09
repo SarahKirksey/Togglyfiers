@@ -5,8 +5,8 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class TogglyfierItemInfo
 		this.itemDamage = (short) var2;
 	}
 	
-	public TogglyfierItemInfo(@Nonnull Block var1, int var2)
+	public TogglyfierItemInfo(@NotNull Block var1, int var2)
 	{
 		this(Item.getItemFromBlock(var1), var2);
 	}

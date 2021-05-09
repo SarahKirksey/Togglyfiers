@@ -4,8 +4,9 @@ import com.sarahk.togglyfiers.ModConfig;
 import com.sarahk.togglyfiers.blocks.ModBlocks;
 import com.sarahk.togglyfiers.items.ModItems;
 import com.sarahk.togglyfiers.util.MutableItemStack;
-import com.sarahk.togglyfiers.util.Packet250CustomPayload;
+import com.sarahk.togglyfiers.network.TogglyfierPacket;
 import com.sarahk.togglyfiers.util.TogglyfierItemInfo;
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -20,6 +21,8 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.client.CPacketCustomPayload;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.lwjgl.opengl.GL11;
@@ -62,6 +65,15 @@ public class GuiTogglyfierConfig extends GuiScreen implements ITogglyfierGuiBase
 	private static final int minimumButtonCount = 6;
 	private static final RenderItem itemRenderer = new RenderItem(Minecraft.getMinecraft().renderEngine, new ModelManager(new TextureMap("togglyfiers")), new ItemColors());
 	
+	{
+		guiPrevButton = new GuiButton(0, 0, 0, this.width / 3, 20, "");
+		buttonList.add(new GuiButton(1, 0, this.height - 20, this.width / 3, 20, "Next"));
+		guiSaveButton = new GuiButton(2, this.width / 3 + 8, this.height - 30, this.width / 6 - 2, 20, "Save");
+		buttonList.add(new GuiButton(3, this.width / 3 + 8 + this.width / 6, this.height - 30, this.width / 6 - 2, 20, "Exit"));
+		guiScannerButton = new GuiButton(4, this.width - 110, this.height - 30, 100, 20, "");
+		buttonList.add(new GuiButton(5, this.width - 110, 25, 100, 20, "Add Blocks"));
+	}
+	
 	public GuiTogglyfierConfig(IInventory var1)
 	{
 		this.invPlayer = var1;
@@ -86,19 +98,13 @@ public class GuiTogglyfierConfig extends GuiScreen implements ITogglyfierGuiBase
 		this.buttonList.clear();
 		this.itemFlagButtons.clear();
 		this.priorityButtons.clear();
-		this.guiPrevButton = new GuiButton(0, 0, 0, this.width / 3, 20, "");
 		this.buttonList.add(this.guiPrevButton);
 		this.setPrevButtonText();
-		this.buttonList.add(new GuiButton(1, 0, this.height - 20, this.width / 3, 20, "Next"));
 		int var1 = this.width / 3 + 8;
 		int var2 = this.width / 6;
-		this.guiSaveButton = new GuiButton(2, var1, this.height - 30, var2 - 2, 20, "Save");
 		this.buttonList.add(this.guiSaveButton);
-		this.buttonList.add(new GuiButton(3, var1 + var2, this.height - 30, var2 - 2, 20, "Exit"));
-		this.guiScannerButton = new GuiButton(4, this.width - 110, this.height - 30, 100, 20, "");
 		this.buttonList.add(this.guiScannerButton);
 		this.updateScannerButtonText();
-		this.buttonList.add(new GuiButton(5, this.width - 110, 25, 100, 20, "Add Blocks"));
 		ModConfig.ItemFlags[] var3 = ModConfig.ItemFlags.values();
 		
 		for(ModConfig.ItemFlags var6 : var3)
@@ -252,7 +258,7 @@ public class GuiTogglyfierConfig extends GuiScreen implements ITogglyfierGuiBase
 			{
 				var3.writeByte(2);
 				var3.writeByte(1);
-				this.mc.getConnection().sendPacket(new Packet250CustomPayload("Togglyfiers", var2.toByteArray()));
+				this.mc.getConnection().sendPacket(new CPacketCustomPayload("Togglyfiers",  new PacketBuffer(Unpooled.buffer().writeBytes(var2.toByteArray()))));
 				var3.close();
 			}
 			catch (IOException var5)
@@ -373,7 +379,7 @@ public class GuiTogglyfierConfig extends GuiScreen implements ITogglyfierGuiBase
 	private String getItemString(Item var1)
 	{
 		ItemStack var2 = new ItemStack(var1, 0, 0);
-		String var3 = var2.getItem().getUnlocalizedName(var2);
+		String var3 = var2.getItem().getRegistryName().toString();
 		var3 = var3.isEmpty() ? var1 + " Unnamed" : var1 + " " + var3;
 		return var3;
 	}
@@ -401,7 +407,7 @@ public class GuiTogglyfierConfig extends GuiScreen implements ITogglyfierGuiBase
 		}
 		
 		var2.append(' ');
-		String var3 = this.itemStringStack.getItem().getUnlocalizedName(this.itemStringStack);
+		String var3 = this.itemStringStack.getItem().getRegistryName().toString();
 		
 		if (var3.length() > 0)
 		{
@@ -442,7 +448,7 @@ public class GuiTogglyfierConfig extends GuiScreen implements ITogglyfierGuiBase
 			
 			var8.writeInt(var1);
 			var8.writeByte(this.currentItemPriority);
-			this.mc.getConnection().sendPacket(new Packet250CustomPayload("Togglyfiers", var7.toByteArray()));
+			this.mc.getConnection().sendPacket(new CPacketCustomPayload("Togglyfiers",  new PacketBuffer(Unpooled.buffer().writeBytes(var7.toByteArray()))));
 			var8.close();
 		}
 		catch (IOException var6)
@@ -460,7 +466,7 @@ public class GuiTogglyfierConfig extends GuiScreen implements ITogglyfierGuiBase
 		{
 			var2.writeByte(4);
 			this.itemPanel.getCurrentItemInfo().writeToStream(var2);
-			this.mc.getConnection().sendPacket(new Packet250CustomPayload("Togglyfiers", var1.toByteArray()));
+			this.mc.getConnection().sendPacket(new CPacketCustomPayload("Togglyfiers",  new PacketBuffer(Unpooled.buffer().writeBytes(var1.toByteArray()))));
 			var2.close();
 		}
 		catch (IOException var4)
@@ -519,30 +525,30 @@ public class GuiTogglyfierConfig extends GuiScreen implements ITogglyfierGuiBase
 	{
 		itemIDList.clear();
 		Collection<String> var1 = new HashSet<>();
-		MutableItemStack var2 = new MutableItemStack(Items.AIR, 0, 0);
+		MutableItemStack mutableItemStack = new MutableItemStack(Items.AIR, 0, 0);
 		
-		for (Item var3 : ForgeRegistries.ITEMS)
+		for (Item item : ForgeRegistries.ITEMS)
 		{
-			if (var3 != null && !itemIDExcludeList.contains(var3))
+			if (item != null && !itemIDExcludeList.contains(item))
 			{
-				if (var3.getHasSubtypes())
+				if (item.getHasSubtypes())
 				{
 					var1.clear();
-					var2.setItem(var3);
-					var2.setCount(var3.getItemStackLimit());
+					mutableItemStack.setItem(item);
+					mutableItemStack.setCount(item.getItemStackLimit());
 					
-					for (int var4 = 0; var4 <= 15; ++var4)
+					for (int meta = 0; meta <= 15; ++meta)
 					{
-						var2.setDamage(var4);
+						mutableItemStack.setDamage(meta);
 						
 						try
 						{
-							String var6 = var2.toItemStack().getItem().getRegistryName().toString();
+							String itemRegistryName = mutableItemStack.toItemStack().getItem().getRegistryName().toString();
 							
-							if (!var1.contains(var6))
+							if (!var1.contains(itemRegistryName))
 							{
-								var1.add(var6);
-								itemIDList.add(new TogglyfierItemInfo(var3, var4));
+								var1.add(itemRegistryName);
+								itemIDList.add(new TogglyfierItemInfo(item, meta));
 							}
 						}
 						catch (NullPointerException | IndexOutOfBoundsException var7)
@@ -554,7 +560,7 @@ public class GuiTogglyfierConfig extends GuiScreen implements ITogglyfierGuiBase
 				}
 				else
 				{
-					itemIDList.add(new TogglyfierItemInfo(var3, 0));
+					itemIDList.add(new TogglyfierItemInfo(item, 0));
 				}
 			}
 		}

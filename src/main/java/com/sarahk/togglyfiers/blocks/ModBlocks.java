@@ -7,7 +7,7 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class ModBlocks
 {
@@ -22,9 +22,9 @@ public class ModBlocks
 		registry.register(changeBlock);
 	}
 	
-	@Nonnull public static final Block exampleBlock =
-		new Block(Material.CLAY).setRegistryName("example_block").setUnlocalizedName("exampleBlock").setCreativeTab(CreativeTabs.MISC);
-	@Nonnull public static final BlockTogglyfier togglyfier = new BlockTogglyfier();
-	@Nonnull public static final BlockChangeBlock changeBlock = new BlockChangeBlock();
+	@NotNull public static final Block exampleBlock =
+		new Block(Material.CLAY).setRegistryName("example_block").setCreativeTab(CreativeTabs.MISC);
+	@NotNull public static final BlockTogglyfier togglyfier = new BlockTogglyfier();
+	@NotNull public static final BlockChangeBlock changeBlock = new BlockChangeBlock(Material.CLOTH);
 	
 }

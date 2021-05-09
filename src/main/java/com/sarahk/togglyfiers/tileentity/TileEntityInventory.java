@@ -1,11 +1,11 @@
 package com.sarahk.togglyfiers.tileentity;
 
+
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 
@@ -18,6 +18,8 @@ public abstract class TileEntityInventory extends TileEntity implements IInvento
 		super();
 		this.defaultName = defaultName;
 	}
+	
+	public abstract Container getContainer();
 	
 	@Override public int getField(final int id)                   { return fields.get(id); }
 	@Override public void setField(final int id, final int value) { fields.put(id, value); }
@@ -93,6 +95,14 @@ public abstract class TileEntityInventory extends TileEntity implements IInvento
 	{
 	
 	}
+	
+	/* *
+	 * Determines whether supplied player can use this container
+	 */
+	/*public boolean canInteractWith(final EntityPlayer playerIn)
+	{
+		return false;
+	}*/
 	
 	/**
 	 * Returns the maximum stack size for a inventory slot. Seems to always be 64, possibly will be extended.

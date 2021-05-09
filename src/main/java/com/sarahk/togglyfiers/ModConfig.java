@@ -15,8 +15,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -502,7 +502,7 @@ public final class ModConfig
 		return getValueFromItemInfo(expectedBlocksMap, var0);
 	}
 	
-	@Nonnull
+	@NotNull
 	public static Block getFirstExpectedBlock(Item var0)
 	{
 		if(var0==Items.AIR)
@@ -512,7 +512,7 @@ public final class ModConfig
 		return getFirstExpectedBlock(new ItemStack(var0, 0, -1));
 	}
 	
-	@Nonnull
+	@NotNull
 	public static Block getFirstExpectedBlock(ItemStack var0)
 	{
 		if(var0!=null && var0.getItem()!=Items.AIR)
@@ -523,7 +523,7 @@ public final class ModConfig
 		return Blocks.AIR;
 	}
 	
-	public static int getInt(@Nonnull TogglyfierOptions var0)
+	public static int getInt(@NotNull TogglyfierOptions var0)
 	{
 		if(configUnread)
 		{
@@ -630,7 +630,7 @@ public final class ModConfig
 		return configValues.getProperty(var0.getConfigName());
 	}
 	
-	private static <T> T getValueFromItemInfo(@Nonnull Map<TogglyfierItemInfo, T> var0, @Nullable TogglyfierItemInfo var1)
+	private static <T> T getValueFromItemInfo(@NotNull Map<TogglyfierItemInfo, T> var0, @Nullable TogglyfierItemInfo var1)
 	{
 		T result = null;
 		if(var1!=null)
@@ -640,7 +640,7 @@ public final class ModConfig
 		return result;
 	}
 	
-	public static boolean hasExpectedBlock(@Nonnull ItemStack var0)
+	public static boolean hasExpectedBlock(@NotNull ItemStack var0)
 	{
 		if(var0.isEmpty())
 		{
@@ -653,7 +653,7 @@ public final class ModConfig
 		}
 	}
 	
-	public static boolean hasExpectedBlock(@Nonnull MutableItemStack var0)
+	public static boolean hasExpectedBlock(@NotNull MutableItemStack var0)
 	{
 		return hasExpectedBlock(var0.toItemStack());
 	}
@@ -1250,14 +1250,14 @@ public final class ModConfig
 		CONTAINER_BLOCK_NAMES("containerblocks", "minecraft:chest", String.class, "Comma-delimited list of container block names to search for items"),
 		STACK_TOGGLE_BLOCKS("stacktoggleblocks", "false", Boolean.TYPE, "If true, Toggle Blocks can be stacked up to 16");
 		
-		@Nonnull private final String optionName;
+		@NotNull private final String optionName;
 		private final String optionDefaultValue;
 		private final int optionMinValue;
 		private final int optionMaxValue;
 		private final Serializable optionType;
 		private final String optionDesc;
 		
-		TogglyfierOptions(@Nonnull String name, String defaultValue, String desc, Serializable type, int minimum, int maximum)
+		TogglyfierOptions(@NotNull String name, String defaultValue, String desc, Serializable type, int minimum, int maximum)
 		{
 			optionName = name;
 			optionDefaultValue = defaultValue;
@@ -1277,7 +1277,7 @@ public final class ModConfig
 			this(name, defaultValue, desc, Integer.TYPE, minValue, maxValue);
 		}
 		
-		@Nonnull
+		@NotNull
 		public String getConfigName()
 		{
 			return this.optionName;
